@@ -233,6 +233,11 @@ admin_html = style + """
             <img src="{{ celular.imagen }}">
             <p>Precio: ${{ celular.precio }}</p>
             <p>Stock: {{ celular.stock }}</p>
+            <form method="post" action="/editar_celular/{{ celular.nombre }}">
+                <input type="number" name="stock" value="{{ celular.stock }}" max="100" style="width: 100%;"><br>
+                <input type="text" name="precio" value="{{ celular.precio }}" required style="width: 100%;"><br>
+                <button type="submit">Editar</button>
+            </form>
         </div>
         {% endfor %}
     </div>
@@ -240,17 +245,16 @@ admin_html = style + """
     <div class="form-box" style="width: 300px; margin: auto; padding: 20px; background-color: #f9f9f9; border-radius: 10px;">
         <h2>Agregar nuevo celular</h2>
         <form method="post">
-            <input type="text" name="nombre" placeholder="Nombre" required><br>
-            <input type="text" name="precio" placeholder="Precio" required><br>
-            <input type="text" name="imagen" placeholder="URL Imagen" required><br>
-            <input type="number" name="stock" placeholder="Stock" required><br>
+            <input type="text" name="nombre" placeholder="Nombre" required style="width: 100%;"><br>
+            <input type="text" name="precio" placeholder="Precio" required style="width: 100%;"><br>
+            <input type="text" name="imagen" placeholder="URL Imagen" required style="width: 100%;"><br>
+            <input type="number" name="stock" placeholder="Stock" required style="width: 100%;" max="100"><br>
             <input type="submit" value="Agregar">
         </form>
     </div>
 </body>
 </html>
 """
-
 
 @app.route('/')
 def index():
@@ -415,6 +419,29 @@ def vista_admin():
 
     celulares = tabla_celulares.scan().get('Items', [])
     return render_template_string(admin_html, username=session['username'], celulares=celulares, mensaje=mensaje)
+
+@app.route('/editar_celular/<nombre>', methods=['POST'])
+def editar_celular(nombre):
+    nuevo_stock = int(request.form['stock'])
+    nuevo_precio = Decimal(request.form['precio'])
+
+    # Validación del stock
+    if nuevo_stock > 100:
+        return "<h3 style='color:red;'>El stock no puede ser mayor a 100.</h3><a href='/admin'>Volver</a>"
+
+    try:
+        # Actualizar el celular en DynamoDB
+        tabla_celulares.update_item(
+            Key={'nombre': nombre},
+            UpdateExpression="SET precio = :precio, stock = :stock",
+            ExpressionAttributeValues={
+                ':precio': nuevo_precio,
+                ':stock': nuevo_stock
+            }
+        )
+        return redirect('/admin')
+    except Exception as e:
+        return f"<h3 style='color:red;'>Error al actualizar celular: {str(e)}</h3><a href='/admin'>Volver</a>"
 
 @app.route('/logout')
 def logout():
