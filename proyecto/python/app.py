@@ -261,6 +261,16 @@ admin_html = style + """
 def index():
     return render_template_string(login_html, mensaje=None)
 
+@app.route('/usuario')
+def usuario():
+    if 'username' not in session:
+        return redirect('/')
+    username = session['username']
+    celulares = tabla_celulares.scan().get('Items', [])
+    carrito = session.get('carrito', [])
+    total = sum(float(item['precio']) * int(item['cantidad']) for item in carrito)
+    return render_template_string(main_page_html, username=username, celulares=celulares, carrito=carrito, total=total)
+
 @app.route('/login', methods=['POST'])
 def login():
     username = request.form['username']
