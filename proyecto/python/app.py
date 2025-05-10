@@ -21,16 +21,17 @@ style = """
         display: flex;
         flex-direction: column;
         align-items: center;
-        height: 100vh;
         justify-content: center;
+        min-height: 100vh;
     }
     .login-container {
         display: flex;
+        flex-direction: row;
+        gap: 20px;
         justify-content: center;
         align-items: center;
-        gap: 50px;
         flex-wrap: wrap;
-        max-width: 600px;
+        width: 100%;
     }
     .form-box {
         background-color: #f9f9f9;
@@ -39,6 +40,7 @@ style = """
         padding: 30px;
         width: 300px;
         box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        margin: 10px;
     }
     .form-box h2 {
         margin-top: 0;
@@ -73,15 +75,17 @@ style = """
         gap: 20px;
         margin: 30px auto;
         padding: 10px;
+        width: 100%;
     }
     .card {
         background-color: #f0f0f0;
         border: 1px solid #ccc;
         border-radius: 10px;
         padding: 20px;
-        width: 250px;
+        width: 200px;
         box-sizing: border-box;
         text-align: center;
+        margin-bottom: 20px;
     }
     .card img {
         width: 100%;
@@ -102,30 +106,41 @@ style = """
     button:hover {
         background-color: #333;
     }
-    .container {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 20px;
-        max-width: 100%;
+    table {
+        width: 90%;
+        margin: auto;
+        margin-top: 20px;
+        border-collapse: collapse;
     }
-    @media (max-width: 1200px) {
-        .container {
-            grid-template-columns: repeat(4, 1fr);
+    th, td {
+        border: 1px solid #ccc;
+        padding: 10px;
+    }
+    th {
+        background-color: #ccc;
+        color: #000;
+    }
+
+    /* Responsividad */
+    @media screen and (max-width: 768px) {
+        .login-container {
+            flex-direction: column;
+            gap: 30px;
+        }
+        .form-box {
+            width: 90%;
+            max-width: 350px;
         }
     }
-    @media (max-width: 900px) {
-        .container {
-            grid-template-columns: repeat(3, 1fr);
+
+    /* Responsividad para celulares */
+    @media screen and (max-width: 480px) {
+        .card {
+            width: 100%;
+            margin-bottom: 10px;
         }
-    }
-    @media (max-width: 600px) {
         .container {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-    @media (max-width: 400px) {
-        .container {
-            grid-template-columns: 1fr;
+            justify-content: center;
         }
     }
 </style>
