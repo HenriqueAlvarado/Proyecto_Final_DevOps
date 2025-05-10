@@ -234,7 +234,7 @@ admin_html = style + """
             <p>Precio: ${{ celular.precio }}</p>
             <p>Stock: {{ celular.stock }}</p>
             <form method="post" action="/editar_celular/{{ celular.nombre }}">
-                <input type="number" name="stock" value="{{ celular.stock }}" max="100" style="width: 100%;"><br>
+                <input type="text" name="stock" value="{{ celular.stock }}" max="100" style="width: 100%;"><br>
                 <input type="text" name="precio" value="{{ celular.precio }}" required style="width: 100%;"><br>
                 <button type="submit">Editar</button>
             </form>
@@ -248,7 +248,7 @@ admin_html = style + """
             <input type="text" name="nombre" placeholder="Nombre" required style="width: 100%;"><br>
             <input type="text" name="precio" placeholder="Precio" required style="width: 100%;"><br>
             <input type="text" name="imagen" placeholder="URL Imagen" required style="width: 100%;"><br>
-            <input type="number" name="stock" placeholder="Stock" required style="width: 100%;" max="100"><br>
+            <input type="text" name="stock" placeholder="Stock" required style="width: 100%;" max="100"><br>
             <input type="submit" value="Agregar">
         </form>
     </div>
