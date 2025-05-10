@@ -151,6 +151,14 @@ main_page_html = style + """
 <html>
 <head><title>Sellphones</title></head>
 <body>
+    <div style="display: flex; justify-content: flex-end; background-color: #f0f0f0; padding: 10px 20px; gap: 10px;">
+        <form action="/admin" method="get">
+            <button type="submit">Vista Admin</button>
+        </form>
+        <form action="/logout" method="get">
+            <button type="submit">Cerrar sesión</button>
+        </form>
+    </div>
     <h1>Bienvenido a Sellphones, {{ username }}</h1>
     <form action="/logout" method="get">
         <button type="submit">Cerrar sesión</button>
@@ -201,6 +209,48 @@ main_page_html = style + """
         <button type="submit">Comprar ahora</button>
     </form>
     {% endif %}
+</body>
+</html>
+"""
+
+admin_html = style + """
+<!DOCTYPE html>
+<html>
+<head><title>Vista Admin</title></head>
+<body>
+    <div style="display: flex; justify-content: flex-end; background-color: #f0f0f0; padding: 10px 20px; gap: 10px;">
+        <form action="/" method="get">
+            <button type="submit">Vista Usuario</button>
+        </form>
+        <form action="/logout" method="get">
+            <button type="submit">Cerrar sesión</button>
+        </form>
+    </div>
+
+    <h1>Vista de administrador</h1>
+    {% if mensaje %}
+        <div class="message">{{ mensaje }}</div>
+    {% endif %}
+
+    <div class="container">
+        {% for celular in celulares %}
+        <div class="card">
+            <h3>{{ celular.nombre }}</h3>
+            <img src="{{ celular.imagen }}">
+            <p>Precio: ${{ celular.precio }}</p>
+            <p>Stock: {{ celular.stock }}</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <h2>Agregar nuevo celular</h2>
+    <form method="post" style="width: 300px; margin: auto;">
+        <input type="text" name="nombre" placeholder="Nombre" required><br>
+        <input type="text" name="precio" placeholder="Precio" required><br>
+        <input type="text" name="imagen" placeholder="URL Imagen" required><br>
+        <input type="number" name="stock" placeholder="Stock" required><br>
+        <input type="submit" value="Agregar">
+    </form>
 </body>
 </html>
 """
@@ -338,6 +388,36 @@ def comprar():
         return render_template_string(main_page_html, username=session['username'], celulares=celulares, carrito=[])
     except Exception as e:
         return f"<h3 style='color:red;'>Error al procesar la compra: {str(e)}</h3><a href='/'>Volver</a>"
+
+@app.route('/admin', methods=['GET', 'POST'])
+def vista_admin():
+    if 'username' not in session:
+        return redirect('/')
+
+    mensaje = None
+
+    if request.method == 'POST':
+        try:
+            nombre = request.form['nombre']
+            precio = float(request.form['precio'])
+            imagen = request.form['imagen']
+            stock = int(request.form['stock'])
+
+            if not nombre or not imagen:
+                mensaje = "Todos los campos son obligatorios"
+            else:
+                tabla_celulares.put_item(Item={
+                    'nombre': nombre,
+                    'precio': precio,
+                    'imagen': imagen,
+                    'stock': stock
+                })
+                mensaje = "Celular agregado exitosamente"
+        except Exception as e:
+            mensaje = f"Error: {str(e)}"
+
+    celulares = tabla_celulares.scan().get('Items', [])
+    return render_template_string(admin_html, username=session['username'], celulares=celulares, mensaje=mensaje)
 
 @app.route('/logout')
 def logout():
