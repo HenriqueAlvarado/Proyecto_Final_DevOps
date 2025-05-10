@@ -234,8 +234,8 @@ admin_html = style + """
             <p>Precio: ${{ celular.precio }}</p>
             <p>Stock: {{ celular.stock }}</p>
             <form method="post" action="/editar_celular/{{ celular.nombre }}">
-                <input type="number" name="stock" value="{{ celular.stock }}" max="100" style="width: 100%;"><br>
-                <input type="text" name="precio" value="{{ celular.precio }}" required style="width: 100%;"><br>
+                <input type="number" name="stock" value="{{ celular.stock }}" max="100" style="width: 100%; padding: 10px; margin-top: 10px; border-radius: 5px; border: 1px solid #ccc;"><br>
+                <input type="text" name="precio" value="{{ celular.precio }}" required style="width: 100%; padding: 10px; margin-top: 10px; border-radius: 5px; border: 1px solid #ccc;"><br>
                 <button type="submit">Editar</button>
             </form>
         </div>
@@ -245,16 +245,17 @@ admin_html = style + """
     <div class="form-box" style="width: 300px; margin: auto; padding: 20px; background-color: #f9f9f9; border-radius: 10px;">
         <h2>Agregar nuevo celular</h2>
         <form method="post">
-            <input type="text" name="nombre" placeholder="Nombre" required style="width: 100%;"><br>
-            <input type="text" name="precio" placeholder="Precio" required style="width: 100%;"><br>
-            <input type="text" name="imagen" placeholder="URL Imagen" required style="width: 100%;"><br>
-            <input type="number" name="stock" placeholder="Stock" required style="width: 100%;" max="100"><br>
+            <input type="text" name="nombre" placeholder="Nombre" required style="width: 100%; padding: 10px; margin-top: 10px; border-radius: 5px; border: 1px solid #ccc;"><br>
+            <input type="text" name="precio" placeholder="Precio" required style="width: 100%; padding: 10px; margin-top: 10px; border-radius: 5px; border: 1px solid #ccc;"><br>
+            <input type="text" name="imagen" placeholder="URL Imagen" required style="width: 100%; padding: 10px; margin-top: 10px; border-radius: 5px; border: 1px solid #ccc;"><br>
+            <input type="number" name="stock" placeholder="Stock" required style="width: 100%; padding: 10px; margin-top: 10px; border-radius: 5px; border: 1px solid #ccc;" max="100"><br>
             <input type="submit" value="Agregar">
         </form>
     </div>
 </body>
 </html>
 """
+
 
 @app.route('/')
 def index():
