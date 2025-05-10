@@ -9,106 +9,85 @@ dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
 tabla_usuarios = dynamodb.Table('usuarios')
 tabla_celulares = dynamodb.Table('celulares')
 
-# 🎨 ESTILO BLANCO, NEGRO Y GRIS
 style = """
 <style>
     body {
         background-color: #fff;
         color: #000;
         font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 20px;
-    }
-    .form-box {
-        background-color: #f0f0f0;
-        border: 1px solid #ccc;
-        border-radius: 10px;
-        padding: 30px;
-        width: 300px;
-        margin: 50px auto;
-    }
-    .form-box h2 {
         text-align: center;
-    }
-    input[type="text"], input[type="password"], input[type="number"] {
-        width: 100%;
-        padding: 8px;
-        margin: 5px 0;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-    }
-    button, input[type="submit"] {
-        background-color: #000;
-        color: #fff;
-        border: none;
-        padding: 10px;
-        width: 100%;
-        margin-top: 10px;
-        cursor: pointer;
-        border-radius: 5px;
     }
     .container {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
         gap: 20px;
-        margin-top: 20px;
+        margin-top: 30px;
     }
     .card {
-        background-color: #eee;
-        border: 1px solid #999;
+        background-color: #f0f0f0;
+        border: 1px solid #ccc;
         border-radius: 10px;
         padding: 20px;
         width: 250px;
-        text-align: center;
     }
     img {
         width: 100%;
         height: auto;
         border-radius: 5px;
     }
+    button {
+        background-color: #000;
+        color: #fff;
+        border: none;
+        padding: 10px;
+        margin-top: 10px;
+        cursor: pointer;
+        width: 100%;
+        border-radius: 5px;
+    }
+    button:hover {
+        background-color: #333;
+    }
     table {
-        width: 90%;
-        margin: 20px auto;
+        width: 80%;
+        margin: auto;
+        margin-top: 20px;
         border-collapse: collapse;
     }
     th, td {
-        border: 1px solid #999;
+        border: 1px solid #ccc;
         padding: 10px;
     }
     th {
-        background-color: #000;
-        color: #fff;
+        background-color: #ccc;
+        color: #000;
     }
 </style>
 """
 
-# Login y registro
 login_html = style + """
 <!DOCTYPE html>
 <html>
 <head><title>Login</title></head>
 <body>
-    <div class="form-box">
-        <h2>Iniciar Sesión</h2>
-        <form method="post" action="/login">
-            Usuario: <input type="text" name="username" required><br>
-            Contraseña: <input type="password" name="password" required><br>
-            <input type="submit" value="Entrar">
-        </form>
-        <br>
-        <h2>Registrar</h2>
-        <form method="post" action="/register">
-            Usuario: <input type="text" name="username" required><br>
-            Contraseña: <input type="password" name="password" required><br>
-            <input type="submit" value="Registrar">
-        </form>
-    </div>
+    <h2>Iniciar Sesión</h2>
+    <form method="post" action="/login">
+        Usuario: <input type="text" name="username"><br>
+        Contraseña: <input type="password" name="password"><br>
+        <input type="submit" value="Entrar">
+    </form>
+    <br>
+    <h2>Registrar</h2>
+    <form method="post" action="/register">
+        Usuario: <input type="text" name="username"><br>
+        Contraseña: <input type="password" name="password"><br>
+        <input type="submit" value="Registrar">
+    </form>
 </body>
 </html>
 """
 
-# Página principal
 main_page_html = style + """
 <!DOCTYPE html>
 <html>
@@ -125,28 +104,28 @@ main_page_html = style + """
             <img src="{{ celular.imagen }}">
             <p>Precio: ${{ celular.precio }}</p>
             <p>Stock: {{ celular.stock }}</p>
-            {% if celular.stock > 0 %}
             <form method="post" action="/agregar_carrito">
                 <input type="hidden" name="nombre" value="{{ celular.nombre }}">
                 <input type="hidden" name="precio" value="{{ celular.precio }}">
-                <label for="cantidad">Cantidad:</label>
-                <input type="number" name="cantidad" min="1" max="{{ celular.stock }}" value="1" required>
                 <button type="submit">Agregar al carrito</button>
             </form>
-            {% else %}
-            <p style="color: red;">Agotado</p>
-            {% endif %}
         </div>
         {% endfor %}
     </div>
     <h2>Carrito de compras</h2>
     <table>
-        <tr><th>Producto</th><th>Precio</th><th>Cantidad</th></tr>
+        <tr><th>Producto</th><th>Precio</th><th>Cantidad</th><th>Acciones</th></tr>
         {% for item in carrito %}
         <tr>
             <td>{{ item.nombre }}</td>
             <td>${{ item.precio }}</td>
             <td>{{ item.cantidad }}</td>
+            <td>
+                <form method="post" action="/eliminar_carrito" style="display:inline;">
+                    <input type="hidden" name="nombre" value="{{ item.nombre }}">
+                    <button type="submit">Eliminar uno</button>
+                </form>
+            </td>
         </tr>
         {% endfor %}
     </table>
@@ -168,75 +147,122 @@ def login():
     username = request.form['username']
     password = request.form['password']
 
-    response = tabla_usuarios.get_item(Key={'username': username})
-    user = response.get('Item')
-    if user and check_password_hash(user['password'], password):
-        session['username'] = username
-        session['carrito'] = []
-        celulares = tabla_celulares.scan().get('Items', [])
-        return render_template_string(main_page_html, username=username, celulares=celulares, carrito=[])
-    else:
-        return "<h3 style='color:red;'>Credenciales incorrectas</h3><a href='/'>Volver</a>"
+    if not username or not password:
+        return "<h3 style='color:red;'>Por favor completa todos los campos</h3><a href='/'>Volver</a>"
+
+    try:
+        response = tabla_usuarios.get_item(Key={'username': username})
+        user = response.get('Item')
+        if user and check_password_hash(user['password'], password):
+            session['username'] = username
+            session['carrito'] = []
+            celulares = tabla_celulares.scan().get('Items', [])
+            return render_template_string(main_page_html, username=username, celulares=celulares, carrito=session['carrito'])
+        else:
+            return "<h3 style='color:red;'>Credenciales incorrectas</h3><a href='/'>Volver</a>"
+    except Exception as e:
+        return f"<h3 style='color:red;'>Error: {str(e)}</h3><a href='/'>Volver</a>"
 
 @app.route('/register', methods=['POST'])
 def register():
     username = request.form['username']
     password = request.form['password']
 
-    if tabla_usuarios.get_item(Key={'username': username}).get('Item'):
-        return "<h3 style='color:red;'>El usuario ya existe</h3><a href='/'>Volver</a>"
+    if not username or not password:
+        return "<h3 style='color:red;'>Por favor completa todos los campos</h3><a href='/'>Volver</a>"
 
-    tabla_usuarios.put_item(Item={
-        'username': username,
-        'password': generate_password_hash(password)
-    })
-    return "<h3>Usuario registrado correctamente</h3><a href='/'>Volver al login</a>"
+    try:
+        existing = tabla_usuarios.get_item(Key={'username': username}).get('Item')
+        if existing:
+            return "<h3 style='color:red;'>El usuario ya existe</h3><a href='/'>Volver</a>"
+
+        hashed_password = generate_password_hash(password)
+        tabla_usuarios.put_item(Item={'username': username, 'password': hashed_password})
+        return "<h3>Usuario registrado correctamente</h3><a href='/'>Volver al login</a>"
+    except Exception as e:
+        return f"<h3 style='color:red;'>Error: {str(e)}</h3><a href='/'>Volver</a>"
 
 @app.route('/agregar_carrito', methods=['POST'])
 def agregar_carrito():
-    nombre = request.form['nombre']
-    precio = float(request.form['precio'])
-    cantidad = int(request.form['cantidad'])
-
     if 'carrito' not in session:
         session['carrito'] = []
 
-    for item in session['carrito']:
+    nombre = request.form['nombre']
+    precio = float(request.form['precio'])
+
+    try:
+        response = tabla_celulares.get_item(Key={'nombre': nombre})
+        celular = response.get('Item')
+        if not celular:
+            return "<h3 style='color:red;'>Producto no encontrado</h3><a href='/'>Volver</a>"
+        stock = int(celular.get('stock', 0))
+    except Exception as e:
+        return f"<h3 style='color:red;'>Error al obtener stock: {str(e)}</h3><a href='/'>Volver</a>"
+
+    carrito = session['carrito']
+    for item in carrito:
         if item['nombre'] == nombre:
-            item['cantidad'] += cantidad
+            if item['cantidad'] < stock:
+                item['cantidad'] += 1
+            else:
+                return "<h3 style='color:red;'>No hay más stock disponible</h3><a href='/'>Volver</a>"
             break
     else:
-        session['carrito'].append({'nombre': nombre, 'precio': precio, 'cantidad': cantidad})
+        if stock > 0:
+            carrito.append({'nombre': nombre, 'precio': precio, 'cantidad': 1})
+        else:
+            return "<h3 style='color:red;'>Producto agotado</h3><a href='/'>Volver</a>"
 
+    session['carrito'] = carrito
     celulares = tabla_celulares.scan().get('Items', [])
-    return render_template_string(main_page_html, username=session['username'], celulares=celulares, carrito=session['carrito'])
+    return render_template_string(main_page_html, username=session['username'], celulares=celulares, carrito=carrito)
+
+@app.route('/eliminar_carrito', methods=['POST'])
+def eliminar_carrito():
+    nombre = request.form['nombre']
+    carrito = session.get('carrito', [])
+    for item in carrito:
+        if item['nombre'] == nombre:
+            item['cantidad'] -= 1
+            if item['cantidad'] <= 0:
+                carrito.remove(item)
+            break
+    session['carrito'] = carrito
+    celulares = tabla_celulares.scan().get('Items', [])
+    return render_template_string(main_page_html, username=session['username'], celulares=celulares, carrito=carrito)
 
 @app.route('/comprar', methods=['POST'])
 def comprar():
     carrito = session.get('carrito', [])
-    errores = []
+    if not carrito:
+        return "<h3 style='color:red;'>El carrito está vacío</h3><a href='/'>Volver</a>"
 
-    for item in carrito:
-        nombre = item['nombre']
-        cantidad = item['cantidad']
+    try:
+        for item in carrito:
+            nombre = item['nombre']
+            cantidad = item['cantidad']
 
-        response = tabla_celulares.get_item(Key={'nombre': nombre})
-        celular = response.get('Item')
+            response = tabla_celulares.get_item(Key={'nombre': nombre})
+            celular = response.get('Item')
+            if not celular:
+                return f"<h3 style='color:red;'>Producto {nombre} no encontrado</h3><a href='/'>Volver</a>"
+            stock = int(celular.get('stock', 0))
 
-        if celular and celular['stock'] >= cantidad:
-            nuevo_stock = celular['stock'] - cantidad
+            if stock < cantidad:
+                return f"<h3 style='color:red;'>Stock insuficiente para {nombre}</h3><a href='/'>Volver</a>"
+
+            nuevo_stock = stock - cantidad
             tabla_celulares.update_item(
                 Key={'nombre': nombre},
-                UpdateExpression="SET stock = :s",
-                ExpressionAttributeValues={':s': nuevo_stock}
+                UpdateExpression='SET stock = :val',
+                ExpressionAttributeValues={':val': nuevo_stock}
             )
-        else:
-            errores.append(nombre)
 
-    session['carrito'] = []
-    celulares = tabla_celulares.scan().get('Items', [])
-    mensaje = "¡Compra realizada con éxito!" if not errores else f"Fallo al comprar: {', '.join(errores)}"
-    return render_template_string(main_page_html + f"<p>{mensaje}</p>", username=session['username'], celulares=celulares, carrito=[])
+        session['carrito'] = []
+        celulares = tabla_celulares.scan().get('Items', [])
+        return render_template_string(main_page_html, username=session['username'], celulares=celulares, carrito=[])
+    except Exception as e:
+        return f"<h3 style='color:red;'>Error al procesar la compra: {str(e)}</h3><a href='/'>Volver</a>"
 
 @app.route('/logout')
 def logout():
