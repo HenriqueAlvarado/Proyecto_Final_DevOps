@@ -152,7 +152,7 @@ main_page_html = style + """
 <html>
 <head><title>Sellphones</title></head>
 <body>
-    <div style="display: flex; justify-content: flex-end; background-color: #f0f0f0; padding: 10px 20px; gap: 10px; align-items: center;">
+    <div style="display: flex; justify-content: flex-end; background-color: #white; padding: 10px 20px; gap: 10px; align-items: center;">
         <form action="/admin" method="get" style="margin-right: 10px;">
             <button type="submit">Vista Admin</button>
         </form>
@@ -212,7 +212,7 @@ admin_html = style + """
 <html>
 <head><title>Vista Admin</title></head>
 <body>
-    <div style="display: flex; justify-content: flex-end; background-color: #f0f0f0; padding: 10px 20px; gap: 10px; align-items: center;">
+    <div style="display: flex; justify-content: flex-end; background-color: #white; padding: 10px 20px; gap: 10px; align-items: center;">
         <form action="/" method="get" style="margin-right: 10px;">
             <button type="submit">Vista Usuario</button>
         </form>
