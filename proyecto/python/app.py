@@ -333,7 +333,7 @@ def agregar_carrito():
 
             session['carrito'] = carrito
             celulares = tabla_celulares.scan().get('Items', [])
-            total = sum(item['precio'] * item['cantidad'] for item in carrito)
+            total = sum(float(item['precio']) * int(item['cantidad']) for item in carrito)
             return render_template_string(main_page_html, username=session['username'], celulares=celulares, carrito=carrito, total=total, mensaje_stock=mensaje)
 
     except Exception as e:
@@ -354,7 +354,7 @@ def eliminar_carrito():
             break
     session['carrito'] = carrito
     celulares = tabla_celulares.scan().get('Items', [])
-    total = sum(item['precio'] * item['cantidad'] for item in carrito)
+    total = sum(float(item['precio']) * int(item['cantidad']) for item in carrito)
     return render_template_string(main_page_html, username=session['username'], celulares=celulares, carrito=carrito, total=total)
 
 @app.route('/comprar', methods=['POST'])
