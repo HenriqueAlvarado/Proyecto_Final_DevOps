@@ -172,20 +172,26 @@ main_page_html = style + """
     </div>
     <h2>Carrito de compras</h2>
     <table>
-        <tr><th>Producto</th><th>Precio</th><th>Cantidad</th><th>Acciones</th></tr>
-        {% for item in carrito %}
-        <tr>
-            <td>{{ item.nombre }}</td>
-            <td>${{ item.precio }}</td>
-            <td>{{ item.cantidad }}</td>
-            <td>
-                <form method="post" action="/eliminar_carrito" style="display:inline;">
-                    <input type="hidden" name="nombre" value="{{ item.nombre }}">
-                    <button type="submit">Eliminar uno</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
+        <tr><th>Producto</th><th>Precio unitario</th><th>Cantidad</th><th>Subtotal</th><th>Acciones</th></tr>
+{% for item in carrito %}
+<tr>
+    <td>{{ item.nombre }}</td>
+    <td>${{ item.precio }}</td>
+    <td>{{ item.cantidad }}</td>
+    <td>${{ item.precio * item.cantidad }}</td>
+    <td>
+        <form method="post" action="/eliminar_carrito" style="display:inline;">
+            <input type="hidden" name="nombre" value="{{ item.nombre }}">
+            <button type="submit">Eliminar uno</button>
+        </form>
+    </td>
+</tr>
+{% endfor %}
+<tr>
+    <td colspan="3" style="text-align: right;"><strong>Total:</strong></td>
+    <td colspan="2"><strong>${{ total }}</strong></td>
+</tr>
+
     </table>
     {% if carrito %}
     <form method="post" action="/comprar">
@@ -273,7 +279,8 @@ def agregar_carrito():
 
     session['carrito'] = carrito
     celulares = tabla_celulares.scan().get('Items', [])
-    return render_template_string(main_page_html, username=session['username'], celulares=celulares, carrito=carrito)
+    total = sum(item['precio'] * item['cantidad'] for item in carrito)
+    return render_template_string(main_page_html, username=session['username'], celulares=celulares, carrito=carrito, total=total)
 
 @app.route('/eliminar_carrito', methods=['POST'])
 def eliminar_carrito():
@@ -287,7 +294,8 @@ def eliminar_carrito():
             break
     session['carrito'] = carrito
     celulares = tabla_celulares.scan().get('Items', [])
-    return render_template_string(main_page_html, username=session['username'], celulares=celulares, carrito=carrito)
+    total = sum(item['precio'] * item['cantidad'] for item in carrito)
+    return render_template_string(main_page_html, username=session['username'], celulares=celulares, carrito=carrito, total=total)
 
 @app.route('/comprar', methods=['POST'])
 def comprar():
