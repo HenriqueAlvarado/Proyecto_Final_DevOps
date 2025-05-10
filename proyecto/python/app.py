@@ -9,41 +9,37 @@ dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
 tabla_usuarios = dynamodb.Table('usuarios')
 tabla_celulares = dynamodb.Table('celulares')
 
-# Estilos actualizados (blanco y negro)
+# 🎨 ESTILO BLANCO, NEGRO Y GRIS
 style = """
 <style>
     body {
-        background-color: #000;
-        color: #fff;
+        background-color: #fff;
+        color: #000;
         font-family: Arial, sans-serif;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        flex-direction: column;
         margin: 0;
+        padding: 20px;
     }
     .form-box {
-        background-color: #111;
-        border: 1px solid #fff;
+        background-color: #f0f0f0;
+        border: 1px solid #ccc;
         border-radius: 10px;
         padding: 30px;
         width: 300px;
-        text-align: left;
+        margin: 50px auto;
     }
     .form-box h2 {
         text-align: center;
     }
-    input[type="text"], input[type="password"] {
+    input[type="text"], input[type="password"], input[type="number"] {
         width: 100%;
         padding: 8px;
         margin: 5px 0;
-        border: none;
+        border: 1px solid #ccc;
         border-radius: 4px;
     }
     button, input[type="submit"] {
-        background-color: #fff;
-        color: #000;
+        background-color: #000;
+        color: #fff;
         border: none;
         padding: 10px;
         width: 100%;
@@ -59,11 +55,12 @@ style = """
         margin-top: 20px;
     }
     .card {
-        background-color: #111;
-        border: 1px solid #fff;
+        background-color: #eee;
+        border: 1px solid #999;
         border-radius: 10px;
         padding: 20px;
         width: 250px;
+        text-align: center;
     }
     img {
         width: 100%;
@@ -71,23 +68,22 @@ style = """
         border-radius: 5px;
     }
     table {
-        width: 80%;
-        margin: auto;
-        margin-top: 20px;
+        width: 90%;
+        margin: 20px auto;
         border-collapse: collapse;
     }
     th, td {
-        border: 1px solid #fff;
+        border: 1px solid #999;
         padding: 10px;
     }
     th {
-        background-color: #fff;
-        color: #000;
+        background-color: #000;
+        color: #fff;
     }
 </style>
 """
 
-# HTML login + register
+# Login y registro
 login_html = style + """
 <!DOCTYPE html>
 <html>
@@ -133,6 +129,8 @@ main_page_html = style + """
             <form method="post" action="/agregar_carrito">
                 <input type="hidden" name="nombre" value="{{ celular.nombre }}">
                 <input type="hidden" name="precio" value="{{ celular.precio }}">
+                <label for="cantidad">Cantidad:</label>
+                <input type="number" name="cantidad" min="1" max="{{ celular.stock }}" value="1" required>
                 <button type="submit">Agregar al carrito</button>
             </form>
             {% else %}
@@ -170,9 +168,6 @@ def login():
     username = request.form['username']
     password = request.form['password']
 
-    if not username or not password:
-        return "<h3 style='color:red;'>Por favor completa todos los campos</h3><a href='/'>Volver</a>"
-
     response = tabla_usuarios.get_item(Key={'username': username})
     user = response.get('Item')
     if user and check_password_hash(user['password'], password):
@@ -188,31 +183,30 @@ def register():
     username = request.form['username']
     password = request.form['password']
 
-    if not username or not password:
-        return "<h3 style='color:red;'>Por favor completa todos los campos</h3><a href='/'>Volver</a>"
-
-    existing = tabla_usuarios.get_item(Key={'username': username}).get('Item')
-    if existing:
+    if tabla_usuarios.get_item(Key={'username': username}).get('Item'):
         return "<h3 style='color:red;'>El usuario ya existe</h3><a href='/'>Volver</a>"
 
-    hashed_password = generate_password_hash(password)
-    tabla_usuarios.put_item(Item={'username': username, 'password': hashed_password})
+    tabla_usuarios.put_item(Item={
+        'username': username,
+        'password': generate_password_hash(password)
+    })
     return "<h3>Usuario registrado correctamente</h3><a href='/'>Volver al login</a>"
 
 @app.route('/agregar_carrito', methods=['POST'])
 def agregar_carrito():
     nombre = request.form['nombre']
     precio = float(request.form['precio'])
+    cantidad = int(request.form['cantidad'])
 
     if 'carrito' not in session:
         session['carrito'] = []
 
     for item in session['carrito']:
         if item['nombre'] == nombre:
-            item['cantidad'] += 1
+            item['cantidad'] += cantidad
             break
     else:
-        session['carrito'].append({'nombre': nombre, 'precio': precio, 'cantidad': 1})
+        session['carrito'].append({'nombre': nombre, 'precio': precio, 'cantidad': cantidad})
 
     celulares = tabla_celulares.scan().get('Items', [])
     return render_template_string(main_page_html, username=session['username'], celulares=celulares, carrito=session['carrito'])
@@ -226,7 +220,9 @@ def comprar():
         nombre = item['nombre']
         cantidad = item['cantidad']
 
-        celular = tabla_celulares.get_item(Key={'nombre': nombre}).get('Item')
+        response = tabla_celulares.get_item(Key={'nombre': nombre})
+        celular = response.get('Item')
+
         if celular and celular['stock'] >= cantidad:
             nuevo_stock = celular['stock'] - cantidad
             tabla_celulares.update_item(
@@ -239,7 +235,7 @@ def comprar():
 
     session['carrito'] = []
     celulares = tabla_celulares.scan().get('Items', [])
-    mensaje = "¡Compra realizada con éxito!" if not errores else f"Fallo en: {', '.join(errores)}"
+    mensaje = "¡Compra realizada con éxito!" if not errores else f"Fallo al comprar: {', '.join(errores)}"
     return render_template_string(main_page_html + f"<p>{mensaje}</p>", username=session['username'], celulares=celulares, carrito=[])
 
 @app.route('/logout')
