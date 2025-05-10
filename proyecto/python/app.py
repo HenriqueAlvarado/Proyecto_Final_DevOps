@@ -1,6 +1,7 @@
 from flask import Flask, render_template_string, request, redirect, session
 from werkzeug.security import generate_password_hash, check_password_hash
 import boto3
+from decimal import Decimal
 
 app = Flask(__name__)
 app.secret_key = 'sellphones-secret-key'
@@ -305,7 +306,7 @@ def agregar_carrito():
         session['carrito'] = []
 
     nombre = request.form['nombre']
-    precio = float(request.form['precio'])
+    precio = Decimal(request.form['precio'])
 
     try:
         response = tabla_celulares.get_item(Key={'nombre': nombre})
@@ -399,7 +400,7 @@ def vista_admin():
     if request.method == 'POST':
         try:
             nombre = request.form['nombre']
-            precio = float(request.form['precio'])
+            precio = Decimal(request.form['precio'])
             imagen = request.form['imagen']
             stock = int(request.form['stock'])
 
