@@ -68,7 +68,7 @@ style = """
         color: green;
         font-weight: bold;
     }
-    .container {
+     .container {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
@@ -82,7 +82,7 @@ style = """
         border: 1px solid #ccc;
         border-radius: 10px;
         padding: 20px;
-        width: 200px;
+        width: calc(20% - 20px); /* 5 cards per row */
         box-sizing: border-box;
         text-align: center;
         margin-bottom: 20px;
