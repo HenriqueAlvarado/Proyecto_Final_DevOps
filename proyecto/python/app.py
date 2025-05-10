@@ -152,8 +152,8 @@ main_page_html = style + """
 <html>
 <head><title>Sellphones</title></head>
 <body>
-    <div style="display: flex; justify-content: flex-end; background-color: #f0f0f0; padding: 10px 20px; gap: 10px;">
-        <form action="/admin" method="get">
+    <div style="display: flex; justify-content: flex-end; background-color: #f0f0f0; padding: 10px 20px; gap: 10px; align-items: center;">
+        <form action="/admin" method="get" style="margin-right: 10px;">
             <button type="submit">Vista Admin</button>
         </form>
         <form action="/logout" method="get">
@@ -161,12 +161,6 @@ main_page_html = style + """
         </form>
     </div>
     <h1>Bienvenido a Sellphones, {{ username }}</h1>
-    <form action="/logout" method="get">
-        <button type="submit">Cerrar sesión</button>
-    </form>
-    {% if mensaje_stock %}
-        <div class="message" style="color:red;">{{ mensaje_stock }}</div>
-    {% endif %}
     <div class="container">
         {% for celular in celulares %}
         <div class="card">
@@ -185,25 +179,24 @@ main_page_html = style + """
     <h2>Carrito de compras</h2>
     <table>
         <tr><th>Producto</th><th>Precio unitario</th><th>Cantidad</th><th>Subtotal</th><th>Acciones</th></tr>
-{% for item in carrito %}
-<tr>
-    <td>{{ item.nombre }}</td>
-    <td>${{ item.precio }}</td>
-    <td>{{ item.cantidad }}</td>
-    <td>${{ item.precio * item.cantidad }}</td>
-    <td>
-        <form method="post" action="/eliminar_carrito" style="display:inline;">
-            <input type="hidden" name="nombre" value="{{ item.nombre }}">
-            <button type="submit">Eliminar uno</button>
-        </form>
-    </td>
-</tr>
-{% endfor %}
-<tr>
-    <td colspan="3" style="text-align: right;"><strong>Total:</strong></td>
-    <td colspan="2"><strong>${{ total }}</strong></td>
-</tr>
-
+        {% for item in carrito %}
+        <tr>
+            <td>{{ item.nombre }}</td>
+            <td>${{ item.precio }}</td>
+            <td>{{ item.cantidad }}</td>
+            <td>${{ item.precio * item.cantidad }}</td>
+            <td>
+                <form method="post" action="/eliminar_carrito" style="display:inline;">
+                    <input type="hidden" name="nombre" value="{{ item.nombre }}">
+                    <button type="submit">Eliminar uno</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <td colspan="3" style="text-align: right;"><strong>Total:</strong></td>
+            <td colspan="2"><strong>${{ total }}</strong></td>
+        </tr>
     </table>
     {% if carrito %}
     <form method="post" action="/comprar">
@@ -219,8 +212,8 @@ admin_html = style + """
 <html>
 <head><title>Vista Admin</title></head>
 <body>
-    <div style="display: flex; justify-content: flex-end; background-color: #f0f0f0; padding: 10px 20px; gap: 10px;">
-        <form action="/" method="get">
+    <div style="display: flex; justify-content: flex-end; background-color: #f0f0f0; padding: 10px 20px; gap: 10px; align-items: center;">
+        <form action="/" method="get" style="margin-right: 10px;">
             <button type="submit">Vista Usuario</button>
         </form>
         <form action="/logout" method="get">
@@ -244,17 +237,20 @@ admin_html = style + """
         {% endfor %}
     </div>
 
-    <h2>Agregar nuevo celular</h2>
-    <form method="post" style="width: 300px; margin: auto;">
-        <input type="text" name="nombre" placeholder="Nombre" required><br>
-        <input type="text" name="precio" placeholder="Precio" required><br>
-        <input type="text" name="imagen" placeholder="URL Imagen" required><br>
-        <input type="number" name="stock" placeholder="Stock" required><br>
-        <input type="submit" value="Agregar">
-    </form>
+    <div class="form-box" style="width: 300px; margin: auto; padding: 20px; background-color: #f9f9f9; border-radius: 10px;">
+        <h2>Agregar nuevo celular</h2>
+        <form method="post">
+            <input type="text" name="nombre" placeholder="Nombre" required><br>
+            <input type="text" name="precio" placeholder="Precio" required><br>
+            <input type="text" name="imagen" placeholder="URL Imagen" required><br>
+            <input type="number" name="stock" placeholder="Stock" required><br>
+            <input type="submit" value="Agregar">
+        </form>
+    </div>
 </body>
 </html>
 """
+
 
 @app.route('/')
 def index():
