@@ -155,6 +155,9 @@ main_page_html = style + """
     <form action="/logout" method="get">
         <button type="submit">Cerrar sesión</button>
     </form>
+    {% if mensaje_stock %}
+        <div class="message" style="color:red;">{{ mensaje_stock }}</div>
+    {% endif %}
     <div class="container">
         {% for celular in celulares %}
         <div class="card">
@@ -258,29 +261,35 @@ def agregar_carrito():
         response = tabla_celulares.get_item(Key={'nombre': nombre})
         celular = response.get('Item')
         if not celular:
-            return "<h3 style='color:red;'>Producto no encontrado</h3><a href='/'>Volver</a>"
-        stock = int(celular.get('stock', 0))
-    except Exception as e:
-        return f"<h3 style='color:red;'>Error al obtener stock: {str(e)}</h3><a href='/'>Volver</a>"
-
-    carrito = session['carrito']
-    for item in carrito:
-        if item['nombre'] == nombre:
-            if item['cantidad'] < stock:
-                item['cantidad'] += 1
-            else:
-                return "<h3 style='color:red;'>No hay más stock disponible</h3><a href='/'>Volver</a>"
-            break
-    else:
-        if stock > 0:
-            carrito.append({'nombre': nombre, 'precio': precio, 'cantidad': 1})
+            mensaje = "Producto no encontrado"
         else:
-            return "<h3 style='color:red;'>Producto agotado</h3><a href='/'>Volver</a>"
+            stock = int(celular.get('stock', 0))
+            carrito = session['carrito']
+            for item in carrito:
+                if item['nombre'] == nombre:
+                    if item['cantidad'] < stock:
+                        item['cantidad'] += 1
+                        mensaje = None
+                    else:
+                        mensaje = "No hay más stock disponible"
+                    break
+            else:
+                if stock > 0:
+                    carrito.append({'nombre': nombre, 'precio': precio, 'cantidad': 1})
+                    mensaje = None
+                else:
+                    mensaje = "Producto agotado"
 
-    session['carrito'] = carrito
-    celulares = tabla_celulares.scan().get('Items', [])
-    total = sum(item['precio'] * item['cantidad'] for item in carrito)
-    return render_template_string(main_page_html, username=session['username'], celulares=celulares, carrito=carrito, total=total)
+            session['carrito'] = carrito
+            celulares = tabla_celulares.scan().get('Items', [])
+            total = sum(item['precio'] * item['cantidad'] for item in carrito)
+            return render_template_string(main_page_html, username=session['username'], celulares=celulares, carrito=carrito, total=total, mensaje_stock=mensaje)
+
+    except Exception as e:
+        mensaje = f"Error al obtener stock: {str(e)}"
+        celulares = tabla_celulares.scan().get('Items', [])
+        total = sum(item['precio'] * item['cantidad'] for item in session['carrito'])
+        return render_template_string(main_page_html, username=session['username'], celulares=celulares, carrito=session['carrito'], total=total, mensaje_stock=mensaje)
 
 @app.route('/eliminar_carrito', methods=['POST'])
 def eliminar_carrito():
