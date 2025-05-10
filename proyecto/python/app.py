@@ -212,8 +212,8 @@ admin_html = style + """
 <html>
 <head><title>Vista Admin</title></head>
 <body>
-    <div style="display: flex; justify-content: flex-end; background-color: #white; padding: 10px 20px; gap: 10px; align-items: center;">
-        <form action="/login" method="get" style="margin-right: 10px;">
+    <div style="display: flex; justify-content: flex-end; background-color: #fff; padding: 10px 20px; gap: 10px; align-items: center;">
+        <form action="/usuario" method="get" style="margin-right: 10px;">
             <button type="submit">Vista Usuario</button>
         </form>
         <form action="/logout" method="get">
