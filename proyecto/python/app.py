@@ -21,14 +21,16 @@ style = """
         display: flex;
         flex-direction: column;
         align-items: center;
+        height: 100vh;
+        justify-content: center;
     }
     .login-container {
         display: flex;
-        flex-direction: row;
-        gap: 50px;
         justify-content: center;
-        margin-top: 100px;
+        align-items: center;
+        gap: 50px;
         flex-wrap: wrap;
+        max-width: 600px;
     }
     .form-box {
         background-color: #f9f9f9;
@@ -100,19 +102,31 @@ style = """
     button:hover {
         background-color: #333;
     }
-    table {
-        width: 90%;
-        margin: auto;
-        margin-top: 20px;
-        border-collapse: collapse;
+    .container {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 20px;
+        max-width: 100%;
     }
-    th, td {
-        border: 1px solid #ccc;
-        padding: 10px;
+    @media (max-width: 1200px) {
+        .container {
+            grid-template-columns: repeat(4, 1fr);
+        }
     }
-    th {
-        background-color: #ccc;
-        color: #000;
+    @media (max-width: 900px) {
+        .container {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+    @media (max-width: 600px) {
+        .container {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    @media (max-width: 400px) {
+        .container {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
 """
