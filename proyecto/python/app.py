@@ -15,14 +15,61 @@ style = """
         background-color: #fff;
         color: #000;
         font-family: Arial, sans-serif;
-        text-align: center;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .login-container {
+        display: flex;
+        flex-direction: row;
+        gap: 50px;
+        justify-content: center;
+        margin-top: 100px;
+        flex-wrap: wrap;
+    }
+    .form-box {
+        background-color: #f9f9f9;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        padding: 30px;
+        width: 300px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .form-box h2 {
+        margin-top: 0;
+    }
+    .form-box input[type="text"],
+    .form-box input[type="password"],
+    .form-box input[type="submit"] {
+        width: 100%;
+        padding: 10px;
+        margin-top: 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+    .form-box input[type="submit"] {
+        background-color: #000;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+    .form-box input[type="submit"]:hover {
+        background-color: #333;
+    }
+    .message {
+        margin-top: 20px;
+        color: green;
+        font-weight: bold;
     }
     .container {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
         gap: 20px;
-        margin-top: 30px;
+        margin: 30px auto;
+        padding: 10px;
     }
     .card {
         background-color: #f0f0f0;
@@ -30,10 +77,13 @@ style = """
         border-radius: 10px;
         padding: 20px;
         width: 250px;
+        box-sizing: border-box;
+        text-align: center;
     }
-    img {
+    .card img {
         width: 100%;
-        height: auto;
+        height: 250px;
+        object-fit: cover;
         border-radius: 5px;
     }
     button {
@@ -50,7 +100,7 @@ style = """
         background-color: #333;
     }
     table {
-        width: 80%;
+        width: 90%;
         margin: auto;
         margin-top: 20px;
         border-collapse: collapse;
@@ -71,19 +121,27 @@ login_html = style + """
 <html>
 <head><title>Login</title></head>
 <body>
-    <h2>Iniciar Sesión</h2>
-    <form method="post" action="/login">
-        Usuario: <input type="text" name="username"><br>
-        Contraseña: <input type="password" name="password"><br>
-        <input type="submit" value="Entrar">
-    </form>
-    <br>
-    <h2>Registrar</h2>
-    <form method="post" action="/register">
-        Usuario: <input type="text" name="username"><br>
-        Contraseña: <input type="password" name="password"><br>
-        <input type="submit" value="Registrar">
-    </form>
+    <div class="login-container">
+        <div class="form-box">
+            <h2>Iniciar Sesión</h2>
+            <form method="post" action="/login">
+                <input type="text" name="username" placeholder="Usuario">
+                <input type="password" name="password" placeholder="Contraseña">
+                <input type="submit" value="Entrar">
+            </form>
+        </div>
+        <div class="form-box">
+            <h2>Registrar</h2>
+            <form method="post" action="/register">
+                <input type="text" name="username" placeholder="Usuario">
+                <input type="password" name="password" placeholder="Contraseña">
+                <input type="submit" value="Registrar">
+            </form>
+            {% if mensaje %}
+            <div class="message">{{ mensaje }}</div>
+            {% endif %}
+        </div>
+    </div>
 </body>
 </html>
 """
@@ -140,7 +198,7 @@ main_page_html = style + """
 
 @app.route('/')
 def index():
-    return render_template_string(login_html)
+    return render_template_string(login_html, mensaje=None)
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -148,7 +206,7 @@ def login():
     password = request.form['password']
 
     if not username or not password:
-        return "<h3 style='color:red;'>Por favor completa todos los campos</h3><a href='/'>Volver</a>"
+        return render_template_string(login_html, mensaje="Por favor completa todos los campos")
 
     try:
         response = tabla_usuarios.get_item(Key={'username': username})
@@ -159,9 +217,9 @@ def login():
             celulares = tabla_celulares.scan().get('Items', [])
             return render_template_string(main_page_html, username=username, celulares=celulares, carrito=session['carrito'])
         else:
-            return "<h3 style='color:red;'>Credenciales incorrectas</h3><a href='/'>Volver</a>"
+            return render_template_string(login_html, mensaje="Credenciales incorrectas")
     except Exception as e:
-        return f"<h3 style='color:red;'>Error: {str(e)}</h3><a href='/'>Volver</a>"
+        return render_template_string(login_html, mensaje=f"Error: {str(e)}")
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -169,18 +227,18 @@ def register():
     password = request.form['password']
 
     if not username or not password:
-        return "<h3 style='color:red;'>Por favor completa todos los campos</h3><a href='/'>Volver</a>"
+        return render_template_string(login_html, mensaje="Por favor completa todos los campos")
 
     try:
         existing = tabla_usuarios.get_item(Key={'username': username}).get('Item')
         if existing:
-            return "<h3 style='color:red;'>El usuario ya existe</h3><a href='/'>Volver</a>"
+            return render_template_string(login_html, mensaje="El usuario ya existe")
 
         hashed_password = generate_password_hash(password)
         tabla_usuarios.put_item(Item={'username': username, 'password': hashed_password})
-        return "<h3>Usuario registrado correctamente</h3><a href='/'>Volver al login</a>"
+        return render_template_string(login_html, mensaje="Usuario registrado correctamente")
     except Exception as e:
-        return f"<h3 style='color:red;'>Error: {str(e)}</h3><a href='/'>Volver</a>"
+        return render_template_string(login_html, mensaje=f"Error: {str(e)}")
 
 @app.route('/agregar_carrito', methods=['POST'])
 def agregar_carrito():
