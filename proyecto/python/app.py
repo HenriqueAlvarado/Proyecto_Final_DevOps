@@ -195,7 +195,7 @@ main_page_html = style + """
         {{ mensaje_stock }}
         </div>
     {% endif %}
-                    {% if mensaje_compra %}
+        {% if mensaje_compra %}
     <div class="message" style="color: green; font-weight: bold;">
         {{ mensaje_compra }}
     </div>
