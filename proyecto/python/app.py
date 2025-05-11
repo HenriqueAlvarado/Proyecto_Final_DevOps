@@ -436,7 +436,8 @@ def eliminar_carrito():
 def comprar():
     carrito = session.get('carrito', [])
     if not carrito:
-        return "<h3 style='color:red;'>El carrito está vacío</h3><a href='/'>Volver</a>"
+        session['mensaje_stock'] = "El carrito está vacío"
+        return redirect('/usuario')
 
     try:
         for item in carrito:
@@ -446,11 +447,13 @@ def comprar():
             response = tabla_celulares.get_item(Key={'nombre': nombre})
             celular = response.get('Item')
             if not celular:
-                return f"<h3 style='color:red;'>Producto {nombre} no encontrado</h3><a href='/'>Volver</a>"
+                session['mensaje_stock'] = f"Producto {nombre} no encontrado"
+                return redirect('/usuario')
             stock = int(celular.get('stock', 0))
 
             if stock < cantidad:
-                return f"<h3 style='color:red;'>Stock insuficiente para {nombre}</h3><a href='/'>Volver</a>"
+                session['mensaje_stock'] = f"Stock insuficiente para {nombre}"
+                return redirect('/usuario')
 
             nuevo_stock = stock - cantidad
             tabla_celulares.update_item(
@@ -461,10 +464,10 @@ def comprar():
 
         session['carrito'] = []
         session['mensaje_compra'] = "¡Compra exitosa! Gracias por tu compra."
-        celulares = tabla_celulares.scan().get('Items', [])
-        return render_template_string(main_page_html, username=session['username'], celulares=celulares, carrito=[])
+        return redirect('/usuario')
     except Exception as e:
-        return f"<h3 style='color:red;'>Error al procesar la compra: {str(e)}</h3><a href='/'>Volver</a>"
+        session['mensaje_stock'] = f"Error al procesar la compra: {str(e)}"
+        return redirect('/usuario')
 
 @app.route('/admin', methods=['GET', 'POST'])
 def vista_admin():
