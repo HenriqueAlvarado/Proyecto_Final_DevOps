@@ -181,6 +181,10 @@ main_page_html = style + """
 <html>
 <head><title>Sellphones</title></head>
 <body>
+    {% if session['mensaje'] %}
+        <div class="message">{{ session['mensaje'] }}</div>
+        {% set _ = session.pop('mensaje') %}
+    {% endif %}
     <div style="display: flex; justify-content: flex-end; background-color: #white; padding: 10px 20px; gap: 10px; align-items: center;">
         <form action="/admin" method="get" style="margin-right: 10px;">
             <button type="submit">Vista Admin</button>
@@ -213,7 +217,7 @@ main_page_html = style + """
             <td>{{ item.nombre }}</td>
             <td>${{ item.precio }}</td>
             <td>{{ item.cantidad }}</td>
-            <td>${{ item.precio * item.cantidad }}</td>
+            <td>${{ (item.precio | float) * item.cantidad }}</td>
             <td>
                 <form method="post" action="/eliminar_carrito" style="display:inline;">
                     <input type="hidden" name="nombre" value="{{ item.nombre }}">
@@ -345,17 +349,24 @@ def agregar_carrito():
     if 'carrito' not in session:
         session['carrito'] = []
 
-    nombre = request.form['nombre']
-    precio = Decimal(request.form['precio'])
-
     try:
+        nombre = request.form.get('nombre')
+        precio_str = request.form.get('precio')
+
+        if not nombre or not precio_str:
+            raise ValueError("Nombre o precio no proporcionado")
+
+        precio = float(precio_str)  # Convierte a float para evitar problemas con Decimal y JSON
+
         response = tabla_celulares.get_item(Key={'nombre': nombre})
         celular = response.get('Item')
+
         if not celular:
             mensaje = "Producto no encontrado"
         else:
             stock = int(celular.get('stock', 0))
             carrito = session['carrito']
+
             for item in carrito:
                 if item['nombre'] == nombre:
                     if item['cantidad'] < stock:
@@ -372,16 +383,32 @@ def agregar_carrito():
                     mensaje = "Producto agotado"
 
             session['carrito'] = carrito
-            celulares = tabla_celulares.scan().get('Items', [])
-            total = sum(float(item['precio']) * int(item['cantidad']) for item in carrito)
-            return render_template_string(main_page_html, username=session['username'], celulares=celulares, carrito=carrito, total=total, mensaje_stock=mensaje)
 
-    except Exception as e:
-        mensaje = f"Error al obtener stock: {str(e)}"
         celulares = tabla_celulares.scan().get('Items', [])
         total = sum(item['precio'] * item['cantidad'] for item in session['carrito'])
-        return render_template_string(main_page_html, username=session['username'], celulares=celulares, carrito=session['carrito'], total=total, mensaje_stock=mensaje)
 
+        return render_template_string(
+            main_page_html,
+            username=session.get('username', 'Invitado'),
+            celulares=celulares,
+            carrito=session['carrito'],
+            total=total,
+            mensaje_stock=mensaje
+        )
+
+    except Exception as e:
+        mensaje = f"Error al procesar la solicitud: {str(e)}"
+        celulares = tabla_celulares.scan().get('Items', [])
+        total = sum(item['precio'] * item['cantidad'] for item in session.get('carrito', []))
+
+        return render_template_string(
+            main_page_html,
+            username=session.get('username', 'Invitado'),
+            celulares=celulares,
+            carrito=session.get('carrito', []),
+            total=total,
+            mensaje_stock=mensaje
+        )
 @app.route('/eliminar_carrito', methods=['POST'])
 def eliminar_carrito():
     nombre = request.form['nombre']
