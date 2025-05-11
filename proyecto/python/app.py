@@ -195,7 +195,7 @@ main_page_html = style + """
         {{ mensaje_stock }}
         </div>
     {% endif %}
-                {% if mensaje_compra %}
+                    {% if mensaje_compra %}
     <div class="message" style="color: green; font-weight: bold;">
         {{ mensaje_compra }}
     </div>
@@ -460,7 +460,7 @@ def comprar():
             )
 
         session['carrito'] = []
-        session['mensaje_compra'] = "¡Compra realizada con éxito!"
+        session['mensaje_compra'] = "¡Compra exitosa! Gracias por tu compra."
         celulares = tabla_celulares.scan().get('Items', [])
         return render_template_string(main_page_html, username=session['username'], celulares=celulares, carrito=[])
     except Exception as e:
