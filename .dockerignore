@@ -1,15 +1,8 @@
-# Ignorar dependencias instaladas localmente
 __pycache__/
 *.pyc
-
-# Ignorar credenciales o llaves locales
+*.pyo
+*.pyd
 *.pem
 .env
-
-# Ignorar Terraform state local
-*.tfstate
-*.tfstate.*
-.terraform/
-
-# Ignorar archivos de IDE
-.vscode/
+terraform/
+Terraform/
