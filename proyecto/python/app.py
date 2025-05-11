@@ -190,16 +190,6 @@ main_page_html = style + """
         </form>
     </div>
     <h1>Bienvenido a Sellphones, {{ username }}</h1>
-        {% with messages = get_flashed_messages() %}
-    {% if messages %}
-        <div class="message">
-        {% for msg in messages %}
-            <p style="color: red;">{{ msg }}</p>
-        {% endfor %}
-        </div>
-    {% endif %}
-    {% endwith %}
-
     <div class="container">
         {% for celular in celulares %}
         <div class="card">
@@ -350,8 +340,6 @@ def register():
     except Exception as e:
         return render_template_string(login_html, mensaje=f"Error: {str(e)}")
 
-from decimal import Decimal
-
 @app.route('/agregar_carrito', methods=['POST'])
 def agregar_carrito():
     if 'carrito' not in session:
@@ -361,62 +349,38 @@ def agregar_carrito():
     precio = Decimal(request.form['precio'])
 
     try:
-        # Obtener el producto desde la base de datos
         response = tabla_celulares.get_item(Key={'nombre': nombre})
         celular = response.get('Item')
-
         if not celular:
             mensaje = "Producto no encontrado"
         else:
             stock = int(celular.get('stock', 0))
             carrito = session['carrito']
-            encontrado = False
-            mensaje = None
-
-            # Buscar si el producto ya está en el carrito
             for item in carrito:
                 if item['nombre'] == nombre:
-                    encontrado = True
                     if item['cantidad'] < stock:
                         item['cantidad'] += 1
+                        mensaje = None
                     else:
                         mensaje = "No hay más stock disponible"
                     break
-
-            # Si no estaba en el carrito, agregarlo si hay stock
-            if not encontrado:
+            else:
                 if stock > 0:
-                    carrito.append({'nombre': nombre, 'precio': float(precio), 'cantidad': 1})
+                    carrito.append({'nombre': nombre, 'precio': precio, 'cantidad': 1})
+                    mensaje = None
                 else:
                     mensaje = "Producto agotado"
 
-            # Guardar el carrito actualizado en la sesión
             session['carrito'] = carrito
-
-            # Obtener todos los productos para renderizar la página
             celulares = tabla_celulares.scan().get('Items', [])
-
-            # Calcular el total correctamente
-            total = sum(item['precio'] * item['cantidad'] for item in carrito)
-
-            return render_template_string(main_page_html,
-                                            username=session['username'],
-                                            celulares=celulares,
-                                            carrito=carrito,
-                                            total=total,
-                                            mensaje_stock=mensaje)
+            total = sum(float(item['precio']) * int(item['cantidad']) for item in carrito)
+            return render_template_string(main_page_html, username=session['username'], celulares=celulares, carrito=carrito, total=total, mensaje_stock=mensaje)
 
     except Exception as e:
         mensaje = f"Error al obtener stock: {str(e)}"
         celulares = tabla_celulares.scan().get('Items', [])
-        carrito = session.get('carrito', [])
-        total = sum(item['precio'] * item['cantidad'] for item in carrito)
-        return render_template_string(main_page_html,
-                                        username=session['username'],
-                                        celulares=celulares,
-                                        carrito=carrito,
-                                        total=total,
-                                        mensaje_stock=mensaje)
+        total = sum(item['precio'] * item['cantidad'] for item in session['carrito'])
+        return render_template_string(main_page_html, username=session['username'], celulares=celulares, carrito=session['carrito'], total=total, mensaje_stock=mensaje)
 
 @app.route('/eliminar_carrito', methods=['POST'])
 def eliminar_carrito():
