@@ -195,10 +195,10 @@ main_page_html = style + """
         {{ mensaje_stock }}
         </div>
     {% endif %}
-        {% if mensaje_compra %}
-        <div style="color: green; font-weight: bold;">
-            {{ mensaje_compra }}
-        </div>
+                {% if mensaje_compra %}
+    <div class="message" style="color: green; font-weight: bold;">
+        {{ mensaje_compra }}
+    </div>
     {% endif %}
     <div class="container">
         {% for celular in celulares %}
@@ -310,7 +310,7 @@ def usuario():
     total = sum(float(item['precio']) * int(item['cantidad']) for item in carrito)
     mensaje_stock = session.pop('mensaje_stock', None)
     mensaje_compra = session.pop('mensaje_compra', None)
-    return render_template_string(main_page_html, username=username, celulares=celulares, carrito=carrito, total=total)
+    return render_template_string(main_page_html, username=username, celulares=celulares, carrito=carrito, total=total, mensaje_compra=mensaje_compra, mensaje_stock=mensaje_stock)
 
 @app.route('/login', methods=['POST'])
 def login():
