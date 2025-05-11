@@ -181,10 +181,6 @@ main_page_html = style + """
 <html>
 <head><title>Sellphones</title></head>
 <body>
-    {% if session['mensaje'] %}
-        <div class="message">{{ session['mensaje'] }}</div>
-        {% set _ = session.pop('mensaje') %}
-    {% endif %}
     <div style="display: flex; justify-content: flex-end; background-color: #white; padding: 10px 20px; gap: 10px; align-items: center;">
         <form action="/admin" method="get" style="margin-right: 10px;">
             <button type="submit">Vista Admin</button>
@@ -194,6 +190,11 @@ main_page_html = style + """
         </form>
     </div>
     <h1>Bienvenido a Sellphones, {{ username }}</h1>
+        {% if mensaje_stock %}
+        <div style="color: red; font-weight: bold;">
+        {{ mensaje_stock }}
+        </div>
+    {% endif %}
     <div class="container">
         {% for celular in celulares %}
         <div class="card">
