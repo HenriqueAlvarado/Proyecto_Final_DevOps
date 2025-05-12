@@ -29,9 +29,9 @@
 
 | Name                  | Description                                                |
 | ---------------------------------|--------------------------------------------------------------- |
-| _[Henrique Alvarado: Dev Infraestructura](https://github.com/HenriqueAlvarado)_            | Encargado de diseñar y desplegar toda la infraestructura del proyecto mediante Terraform, asegurando entornos eficientes, escalables y seguros para su funcionamiento.            |
-| _[Jorge Marroquín: Dev QA](https://github.com/Eliuddd)_                          | Responsable de integrar correctamente la base de datos con el backend, garantizando la calidad del sistema mediante pruebas y validaciones que aseguren su correcto desempeño.     |
-| _[Eros Palma: Ingeniero en software](https://github.com/erospalma)_                  | Apoya en el desarrollo de scripts en Python y en la construcción del frontend, contribuyendo a crear una experiencia de usuario funcional, fluida y visualmente atractiva. 
+| _[Henrique Alvarado: Dev Infraestructura](https://github.com/HenriqueAlvarado)_            | Encargado de desarrollar el código en Python que soporta la lógica del backend y de construir la interfaz del frontend para la aplicación web. Además, colabora en la integración del sistema dentro de la infraestructura definida.            |
+| _[Jorge Marroquín: Dev QA](https://github.com/Eliuddd)_                          | Responsable de establecer la conexión entre la base de datos DynamoDB y el backend, asegurando que los datos se transmitan y gestionen correctamente. También realiza pruebas funcionales para validar el flujo de la información.     |
+| _[Eros Palma: Ingeniero en software](https://github.com/erospalma)_                  | Encargado de diseñar y desplegar toda la infraestructura del proyecto utilizando Terraform, asegurando que los recursos de AWS como instancias EC2, VPC, subredes y seguridad estén correctamente configurados y automatizados. 
 
 <h4 align="center">Diagrama de Lucid</h4>
 
@@ -42,7 +42,7 @@
 
 <h3 align="center">Descripción de Nuestra Arquitectura en AWS</h3>
 <p>
-  En este proyecto, diseñamos una arquitectura en AWS que combina seguridad, segmentación de red y acceso controlado a la base de datos. Toda la infraestructura se encuentra dentro de una VPC con el rango de IPs 10.10.0.0/20, desplegada en una sola zona de disponibilidad.
+  Nuestra infraestructura en AWS se compone de una VPC con una subred pública (10.10.0.0/24) que contiene dos instancias EC2: una Linux Jump Server y una Linux Web Server. La Jump Server permite el acceso mediante SSH (puerto 22) y funciona como punto de entrada al entorno. La Web Server aloja la aplicación Flask y expone el puerto 80 (HTTP) para acceso web. Ambas instancias están protegidas por sus respectivos grupos de seguridad. Además, la aplicación se conecta a Amazon DynamoDB para gestionar la base de datos NoSQL, utilizando Boto3 como cliente en Python.
 </p>
 
 <hr>
