@@ -37,7 +37,7 @@
 
 <h2 align="center"><u>Infraestructura de nuestro proyecto</u></h2>
 <p align="center">
-  <img src="" alt="" width="600">
+  <img src="github/infraestructura (3).png" alt="Infraestructura del proyecto" width="600">
 </p>
 
 <h3 align="center">Descripción de Nuestra Arquitectura en AWS</h3>
