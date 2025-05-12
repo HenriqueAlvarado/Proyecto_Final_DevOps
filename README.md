@@ -3,7 +3,9 @@
 
 <h1 align="center">¡Bienvenidos, somos SellPhones</h1>
 <p align="center">
-<a href="" target=""><img align="center" src="" alt="" height="100" width="100"></a>
+<a href="" target="_blank">
+  <img align="center" src="github/Sellphone.png" alt="Logo del proyecto" height="100" width="100">
+</a>
 </p>
 <h3 align="center">SellPhones: Conecta con lo mejor</h3>
 <h2 align="center"><u>¿Por qué elegir SellPhones?</u></h2>
