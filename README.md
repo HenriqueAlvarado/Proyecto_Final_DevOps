@@ -80,6 +80,3 @@
 </p>
 
 <hr>
-
-<h3 align="center">Cómo correr la aplicación localmente (para pruebas) y cómo acceder a la versión desplegada</h3>
-<p>
